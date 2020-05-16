@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using Game.Helpers;
@@ -11,7 +9,7 @@ using Game.Rendering.Renderers;
 
 namespace Game.Rendering
 {
-    public class GameRendererSettingsLoader
+    public static class GameRendererSettingsLoader
     {
         private static readonly Lazy<GameResource[]> loadedResources = new Lazy<GameResource[]>(() =>
         {
@@ -23,13 +21,10 @@ namespace Game.Rendering
             var resources = directoryInfo.GetFiles("*.png")
                 .Union(directoryInfo.GetFiles("*.gif"))
                 .Union(directoryInfo.GetFiles("*.jpg"))
-                .Select(fileInfo =>
+                .Select(fileInfo => new GameResource
                 {
-                    return new GameResource
-                    {
-                        Image = Image.FromFile(fileInfo.FullName),
-                        FileName = fileInfo.Name.Substring(0, fileInfo.Name.Length - fileInfo.Extension.Length)
-                    };
+                    Image = Image.FromFile(fileInfo.FullName),
+                    FileName = fileInfo.Name.Substring(0, fileInfo.Name.Length - fileInfo.Extension.Length)
                 })
                 .ToArray();
             if (resources.Length == 0)
@@ -48,7 +43,7 @@ namespace Game.Rendering
                     Console.WriteLine($"{x.FileName} parsed to player state {state?.ToString() ?? "<null>"}");
                     return state == null
                         ? null
-                        : new PlayerByStateRenderer(state.Value, SplitImageByFrames(x.Image, new Size(100, 100)));
+                        : new PlayerByStateRenderer(state.Value, x.Image.PrepareImage(new Size(100, 100)));
                 })
                 .NotNull()
                 .ToArray();
@@ -63,7 +58,7 @@ namespace Game.Rendering
                     Console.WriteLine($"{enemyType} parsed to behavior {behavior?.Name ?? "<null>"}");
                     return behavior == null
                         ? null
-                        : new EnemyByBehaviorRenderer(behavior, SplitImageByFrames(x.Image));
+                        : new EnemyByBehaviorRenderer(behavior, x.Image.PrepareImage());
                 })
                 .NotNull()
                 .ToArray();
@@ -71,7 +66,7 @@ namespace Game.Rendering
                 .SingleOrDefault(x => x.FileName.Equals("default", StringComparison.OrdinalIgnoreCase));
             var defaultRenderer = defaultRendererResource == null
                 ? null
-                : new DefaultGameObjectRenderer(SplitImageByFrames(defaultRendererResource.Image));
+                : new DefaultGameObjectRenderer(defaultRendererResource.Image.PrepareImage());
 
             return new GameRenderersSet
             {
@@ -107,49 +102,23 @@ namespace Game.Rendering
             return colors.Select(color => DrawingHelpers.CreateSquare(width, height, color)).ToArray();
         }
 
-        private static Image[] SplitImageByFrames(Image image, Size? targetSize = null)
+        private static Image[] PrepareImage(this Image sourceImage, Size? targetSize = null)
         {
-            if (image.RawFormat.Guid != ImageFormat.Gif.Guid)
-                return new[] {image};
-
-            var framesCount = image.GetFrameCount(FrameDimension.Time);
-
-            var rawFrames = new Image[framesCount];
-            for (var i = 0; i < framesCount; i++)
-            {
-                image.SelectActiveFrame(FrameDimension.Time, i);
-                rawFrames[i] = (Image) image.Clone();
-            }
-
-            var capturedFrames = new List<Image>();
-            foreach (var frame in rawFrames)
-            {
-                var newImageSize = targetSize ?? new Size(frame.Width, frame.Height);
-                var tempBitmap = new Bitmap(newImageSize.Width, newImageSize.Height);
-
-                using var graphics = Graphics.FromImage(tempBitmap);
-                graphics.CompositingMode = CompositingMode.SourceCopy;
-                graphics.CompositingQuality = CompositingQuality.HighQuality;
-                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphics.SmoothingMode = SmoothingMode.HighQuality;
-                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-
-                graphics.DrawImage(image, 0, 0);
-                using var wrapMode = new ImageAttributes();
-                wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                graphics.DrawImage(image, new Rectangle(0, 0, newImageSize.Width, newImageSize.Height), 0,
-                    0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
-
-                capturedFrames.Add(tempBitmap);
-            }
-
-            return capturedFrames.ToArray();
+            return sourceImage
+                .ExtractImageFrames()
+                .Select(frame => frame
+                    .Resize(targetSize ?? new Size(frame.Width, frame.Height))
+                    .AutoCrop(Color.Transparent)
+                    .AutoCrop(Color.White)
+                    .AutoCrop(Color.Black))
+                .Cast<Image>()
+                .ToArray();
         }
-    }
 
-    public class GameResource
-    {
-        public string FileName { get; set; }
-        public Image Image { get; set; }
+        private class GameResource
+        {
+            public string FileName { get; set; }
+            public Image Image { get; set; }
+        }
     }
 }

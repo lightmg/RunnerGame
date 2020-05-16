@@ -6,6 +6,7 @@
         <UseWindowsForms>true</UseWindowsForms>
         <Configurations>Debug</Configurations>
         <Platforms>AnyCPU</Platforms>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
