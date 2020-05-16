@@ -9,6 +9,7 @@ namespace Game.Models
     public class GameModel
     {
         private const double InitialMinimalDistanceBetweenEnemies = 75d;
+        private const int MaxEnemiesOnScreen = 2;
 
         private readonly List<EnemyModel> enemies = new List<EnemyModel>();
         private readonly Random random = new Random();
@@ -20,7 +21,7 @@ namespace Game.Models
         public GameModel(EnemyFactory enemyFactory, GameFieldSize gameFieldSize,
             Dictionary<PlayerState, GameObjectSize> playerSizesByStates)
         {
-            Console.WriteLine($"{gameFieldSize.Width}x{gameFieldSize.Height}");
+            Console.WriteLine($"Starting game with field {gameFieldSize.Width}x{gameFieldSize.Height}");
             this.enemyFactory = enemyFactory;
             this.gameFieldSize = gameFieldSize;
             this.playerSizesByStates = playerSizesByStates;
@@ -69,7 +70,7 @@ namespace Game.Models
             }
 
             if ((enemies.Count == 0 || maxEnemyXCoordinate <= gameFieldSize.Width - MinDistanceBetweenEnemies) &&
-                random.Next(0, 10) == 0)
+                random.Next(0, 10) == 0 && enemies.Count < MaxEnemiesOnScreen)
             {
                 var enemy = CreateEnemy();
                 enemies.Add(enemy);
@@ -100,11 +101,13 @@ namespace Game.Models
         private EnemyModel CreateEnemy()
         {
             var height = random.Next(0, Player.ObjectParameters.Size.Height * 3);
-            return enemyFactory.CreateWithRandomBehavior(new InGamePosition
+            var createdEnemy = enemyFactory.CreateWithRandomBehavior(new InGamePosition
             {
                 X = gameFieldSize.Width - 1,
                 Y = height
             });
+            Console.WriteLine($"Spawned enemy at {createdEnemy.Position}");
+            return createdEnemy;
         }
 
         private PlayerAction GetPlayerAction(GameAction gameAction)

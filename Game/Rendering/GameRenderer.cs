@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Game.Helpers;
@@ -10,7 +9,7 @@ namespace Game.Rendering
 {
     public class GameRenderer
     {
-        private const int TicksPerFrame = 5;
+        private const int TicksPerFrame = 4;
         private readonly PointF gameOrigin;
         private readonly GameRenderersSet renderersSet;
 

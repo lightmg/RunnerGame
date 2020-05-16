@@ -29,16 +29,27 @@ namespace Game
         {
             isDebugMode = commandLineArgs.Contains("-debug");
 
-            var renderersSet = isDebugMode
-                ? GameRendererSettingsLoader.CreateDebugRenderersSet()
-                : GameRendererSettingsLoader.Load();
+            var playerSizesByStates = new Dictionary<PlayerState, GameObjectSize>
+            {
+                {PlayerState.OnGround, new GameObjectSize {Height = 100, Width = 40}},
+                {PlayerState.Jumping, new GameObjectSize {Height = 100, Width = 40}},
+                {PlayerState.Crouching, new GameObjectSize {Height = 40, Width = 100}},
+            };
+            var enemySizesByBehavior = new Dictionary<Type, GameObjectSize>
+            {
+                {typeof(FlyingEnemyBehavior), new GameObjectSize {Height = 40, Width = 40}},
+                {typeof(RunningEnemyBehavior), new GameObjectSize {Height = 40, Width = 40}}
+            };
+            var renderersLoader = new GameRendererSettingsLoader(Path.Combine(PathHelpers.RootPath, "Resources"),
+                playerSizesByStates,
+                enemySizesByBehavior);
+            var renderersSet = renderersLoader.Load();
             renderersSet.DefaultRenderer =
                 new DefaultGameObjectRenderer(DrawingHelpers.CreateSquare(20, 20, Color.Chartreuse));
-            renderer = new GameRenderer(new PointF(0, mainForm.Size.Height - 20), renderersSet);
+            renderer = new GameRenderer(new PointF(0, mainForm.Size.Height), renderersSet);
 
             var game = new GameModel(
-                new EnemyFactory(
-                    new GameObjectSize {Width = 15, Height = 15},
+                new EnemyFactory(enemySizesByBehavior,
                     IEnemyBehavior.CreatorOf<FlyingEnemyBehavior>(),
                     RunningEnemyBehavior.Creator(0),
                     RunningEnemyBehavior.Creator(1),
@@ -46,14 +57,7 @@ namespace Game
                     RunningEnemyBehavior.Creator(2)),
                 new GameFieldSize(
                     mainForm.GameFieldSize.Height,
-                    mainForm.GameFieldSize.Width),
-                new Dictionary<PlayerState, GameObjectSize>
-                {
-                    {PlayerState.OnGround, new GameObjectSize {Height = 100, Width = 100}},
-                    {PlayerState.Crouching, new GameObjectSize {Height = 10, Width = 20}},
-                    {PlayerState.Jumping, new GameObjectSize {Height = 23, Width = 20}}
-                }
-            );
+                    mainForm.GameFieldSize.Width), playerSizesByStates);
 
             mainForm.KeyDown += (sender, args) => keyboardController.KeyPressed(args.KeyCode);
             mainForm.KeyUp += (sender, args) => keyboardController.KeyReleased(args.KeyCode);

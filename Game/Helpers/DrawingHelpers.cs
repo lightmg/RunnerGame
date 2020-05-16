@@ -39,7 +39,7 @@ namespace Game.Helpers
             return rawFrames;
         }
 
-        //Honestly stolen from https://stackoverflow.com/a/29785775 instead of a lot of slow Bitmap.GetPixel and SetPixel opertaions
+        //Honestly stolen from https://stackoverflow.com/a/29785775 instead of a lot of slow GetPixel and SetPixel opertaions
         public static Bitmap AutoCrop(this Bitmap bmp, Color backgroundColor)
         {
             if (Image.GetPixelFormatSize(bmp.PixelFormat) != 32)

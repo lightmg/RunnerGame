@@ -4,35 +4,50 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Game.Helpers;
+using Game.Models;
 using Game.Models.Player;
 using Game.Rendering.Renderers;
 
 namespace Game.Rendering
 {
-    public static class GameRendererSettingsLoader
+    public class GameRendererSettingsLoader
     {
-        private static readonly Lazy<GameResource[]> loadedResources = new Lazy<GameResource[]>(() =>
+        private readonly Dictionary<PlayerState, Size> playerSizesByState;
+        private readonly Dictionary<string, (Type behaviorType, Size objectSize)> enemySizesByBehavior;
+
+        private readonly Lazy<GameResource[]> loadedResources;
+
+        public GameRendererSettingsLoader(string resourcesPath,
+            Dictionary<PlayerState, GameObjectSize> playerSizesByState,
+            Dictionary<Type, GameObjectSize> enemySizesByBehavior)
         {
-            var resourcesFolderPath = Path.Combine(PathHelpers.RootPath, "Resources");
-            var directoryInfo = new DirectoryInfo(resourcesFolderPath);
-            if (!directoryInfo.Exists)
-                throw new InvalidOperationException($"Resources folder [{resourcesFolderPath}] doesn't exists");
+            this.playerSizesByState = playerSizesByState
+                .ToDictionary(x => x.Key, x => new Size(x.Value.Width, x.Value.Height));
+            this.enemySizesByBehavior = enemySizesByBehavior
+                .ToDictionary(x => x.Key.Name, x => (x.Key, new Size(x.Value.Width, x.Value.Height)));
 
-            var resources = directoryInfo.GetFiles("*.png")
-                .Union(directoryInfo.GetFiles("*.gif"))
-                .Union(directoryInfo.GetFiles("*.jpg"))
-                .Select(fileInfo => new GameResource
-                {
-                    Image = Image.FromFile(fileInfo.FullName),
-                    FileName = fileInfo.Name.Substring(0, fileInfo.Name.Length - fileInfo.Extension.Length)
-                })
-                .ToArray();
-            if (resources.Length == 0)
-                throw new InvalidOperationException($"Got 0 resources from [{resourcesFolderPath}]");
-            return resources;
-        });
+            loadedResources = new Lazy<GameResource[]>(() =>
+            {
+                var directoryInfo = new DirectoryInfo(resourcesPath);
+                if (!directoryInfo.Exists)
+                    throw new InvalidOperationException($"Resources folder [{resourcesPath}] doesn't exists");
 
-        public static GameRenderersSet Load(params Type[] knownBehaviors)
+                var resources = directoryInfo.GetFiles("*.png")
+                    .Union(directoryInfo.GetFiles("*.gif"))
+                    .Union(directoryInfo.GetFiles("*.jpg"))
+                    .Select(fileInfo => new GameResource
+                    {
+                        Image = Image.FromFile(fileInfo.FullName),
+                        FileName = fileInfo.Name.Substring(0, fileInfo.Name.Length - fileInfo.Extension.Length)
+                    })
+                    .ToArray();
+                if (resources.Length == 0)
+                    throw new InvalidOperationException($"Got 0 resources from [{resourcesPath}]");
+                return resources;
+            });
+        }
+
+        public GameRenderersSet Load()
         {
             var playerRenderers = loadedResources.Value
                 .Where(x => x.FileName.StartsWith("Player", StringComparison.OrdinalIgnoreCase))
@@ -40,25 +55,23 @@ namespace Game.Rendering
                 {
                     var playerStateString = string.Join(".", x.FileName.Split("_").Skip(1));
                     var state = playerStateString.ParseEnumOrNull<PlayerState>(true);
-                    Console.WriteLine($"{x.FileName} parsed to player state {state?.ToString() ?? "<null>"}");
                     return state == null
                         ? null
-                        : new PlayerByStateRenderer(state.Value, x.Image.PrepareImage(new Size(100, 100)));
+                        : new PlayerByStateRenderer(state.Value,
+                            PrepareImage(x.Image, playerSizesByState[state.Value]));
                 })
                 .NotNull()
                 .ToArray();
-            var behaviorTypesByNames = knownBehaviors.ToDictionary(x => x.Name);
-            Console.WriteLine(behaviorTypesByNames);
+
             var enemiesRenderer = loadedResources.Value
                 .Where(x => x.FileName.StartsWith("Enemy", StringComparison.OrdinalIgnoreCase))
                 .Select(x =>
                 {
                     var enemyType = x.FileName.Split("_").Last();
-                    var behavior = behaviorTypesByNames.GetValueOrDefault(enemyType, null);
-                    Console.WriteLine($"{enemyType} parsed to behavior {behavior?.Name ?? "<null>"}");
-                    return behavior == null
-                        ? null
-                        : new EnemyByBehaviorRenderer(behavior, x.Image.PrepareImage());
+                    var behaviorRecognized = enemySizesByBehavior.TryGetValue(enemyType, out var val);
+                    return behaviorRecognized
+                        ? new EnemyByBehaviorRenderer(val.behaviorType, PrepareImage(x.Image, val.objectSize))
+                        : null;
                 })
                 .NotNull()
                 .ToArray();
@@ -66,7 +79,7 @@ namespace Game.Rendering
                 .SingleOrDefault(x => x.FileName.Equals("default", StringComparison.OrdinalIgnoreCase));
             var defaultRenderer = defaultRendererResource == null
                 ? null
-                : new DefaultGameObjectRenderer(defaultRendererResource.Image.PrepareImage());
+                : new DefaultGameObjectRenderer(PrepareImage(defaultRendererResource.Image));
 
             return new GameRenderersSet
             {
@@ -77,7 +90,7 @@ namespace Game.Rendering
             };
         }
 
-        public static GameRenderersSet CreateDebugRenderersSet()
+        public GameRenderersSet CreateDebugRenderersSet()
         {
             var playerRenderers = new IGameObjectRenderer[]
             {
@@ -102,15 +115,16 @@ namespace Game.Rendering
             return colors.Select(color => DrawingHelpers.CreateSquare(width, height, color)).ToArray();
         }
 
-        private static Image[] PrepareImage(this Image sourceImage, Size? targetSize = null)
+        private static Image[] PrepareImage(Image sourceImage, Size? targetSize = null)
         {
             return sourceImage
                 .ExtractImageFrames()
+                .Select(frame => new Bitmap(frame))
                 .Select(frame => frame
-                    .Resize(targetSize ?? new Size(frame.Width, frame.Height))
                     .AutoCrop(Color.Transparent)
                     .AutoCrop(Color.White)
-                    .AutoCrop(Color.Black))
+                    .AutoCrop(Color.Black)
+                    .Resize(targetSize ?? new Size(frame.Width, frame.Height)))
                 .Cast<Image>()
                 .ToArray();
         }
