@@ -8,7 +8,7 @@ namespace Game.Models
 {
     public class GameModel
     {
-        private const double InitialMinimalDistanceBetweenEnemies = 75d;
+        private const double InitialMinimalDistanceBetweenEnemies = 100d;
         private const int MaxEnemiesOnScreen = 2;
 
         private readonly List<EnemyModel> enemies = new List<EnemyModel>();

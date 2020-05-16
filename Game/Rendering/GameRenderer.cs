@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Game.Helpers;
@@ -9,7 +10,7 @@ namespace Game.Rendering
 {
     public class GameRenderer
     {
-        private const int TicksPerFrame = 4;
+        private const int InitialTicksPerFrame = 6;
         private readonly PointF gameOrigin;
         private readonly GameRenderersSet renderersSet;
 
@@ -31,7 +32,7 @@ namespace Game.Rendering
                 .Select(x => new ImageRenderInfo
                 {
                     Point = x.Point,
-                    Image = RenderObject(x.GameObject, x.Renderer)
+                    Image = RenderObject(gameModel.State, x.GameObject, x.Renderer)
                 })
                 .If(debugging, q => q.Select(x => new ImageRenderInfo
                     {
@@ -52,9 +53,11 @@ namespace Game.Rendering
                    renderersSet.DefaultRenderer;
         }
 
-        private static Image RenderObject(InGameObject gameObject, IGameObjectRenderer renderer)
+        private static Image RenderObject(GameState state, InGameObject gameObject, IGameObjectRenderer renderer)
         {
-            var frameNum = gameObject.LifetimeTicks % (ulong) (renderer.Frames.Length * TicksPerFrame) / TicksPerFrame;
+            var ticksPerFrame = (int) (InitialTicksPerFrame / Math.Sqrt(state.Speed));
+            var frameNum = (int) (gameObject.LifetimeTicks % (ulong) (renderer.Frames.Length * ticksPerFrame)) /
+                           ticksPerFrame;
             return renderer.Frames[frameNum];
         }
     }

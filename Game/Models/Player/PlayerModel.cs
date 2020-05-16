@@ -7,7 +7,7 @@ namespace Game.Models.Player
     public class PlayerModel : InGameObject
     {
         //Jump maximal height = playerHeight * JumpPeakByPlayerHeight;
-        private const double JumpPeakByPlayerHeight = 2;
+        private const double JumpPeakByPlayerHeight = 1.5;
         private const double GravityAcceleration = 0.981d;
         private readonly double initialJumpSpeed;
         private readonly int initialHealth;

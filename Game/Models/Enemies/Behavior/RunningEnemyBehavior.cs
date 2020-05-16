@@ -16,7 +16,7 @@ namespace Game.Models.Enemies.Behavior
             return enemyParameters.Position.Add(-state.Speed * enemySpeed);
         }
 
-        public static Func<RunningEnemyBehavior> Creator(double speed)
+        public static Func<RunningEnemyBehavior> Creator(double speed = 0)
         {
             return () => new RunningEnemyBehavior(speed);
         }

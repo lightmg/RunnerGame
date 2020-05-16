@@ -10,14 +10,14 @@ using Game.Rendering.Renderers;
 
 namespace Game.Rendering
 {
-    public class GameRendererSettingsLoader
+    public class ResourcesLoader
     {
         private readonly Dictionary<PlayerState, Size> playerSizesByState;
         private readonly Dictionary<string, (Type behaviorType, Size objectSize)> enemySizesByBehavior;
 
         private readonly Lazy<GameResource[]> loadedResources;
 
-        public GameRendererSettingsLoader(string resourcesPath,
+        public ResourcesLoader(string resourcesPath,
             Dictionary<PlayerState, GameObjectSize> playerSizesByState,
             Dictionary<Type, GameObjectSize> enemySizesByBehavior)
         {
@@ -47,7 +47,7 @@ namespace Game.Rendering
             });
         }
 
-        public GameRenderersSet Load()
+        public GameRenderersSet LoadRenderers()
         {
             var playerRenderers = loadedResources.Value
                 .Where(x => x.FileName.StartsWith("Player", StringComparison.OrdinalIgnoreCase))
@@ -87,26 +87,6 @@ namespace Game.Rendering
                 Renderers = playerRenderers.Cast<IGameObjectRenderer>()
                     .Concat(enemiesRenderer)
                     .ToArray()
-            };
-        }
-
-        public GameRenderersSet CreateDebugRenderersSet()
-        {
-            var playerRenderers = new IGameObjectRenderer[]
-            {
-                new PlayerByStateRenderer(PlayerState.OnGround,
-                    CreateBlinkingSquare(20, 20, Color.Yellow, Color.Chartreuse, Color.Aqua, Color.Chartreuse)),
-                new PlayerByStateRenderer(PlayerState.Crouching,
-                    CreateBlinkingSquare(20, 10, Color.Aqua, Color.Aquamarine, Color.Azure, Color.Aquamarine)),
-                new PlayerByStateRenderer(PlayerState.Jumping,
-                    CreateBlinkingSquare(20, 22, Color.Red, Color.DarkRed, Color.IndianRed, Color.DarkRed)),
-            };
-
-            var defaultRenderer = new DefaultGameObjectRenderer(DrawingHelpers.CreateSquare(20, 20, Color.Orange));
-            return new GameRenderersSet
-            {
-                Renderers = playerRenderers,
-                DefaultRenderer = defaultRenderer
             };
         }
 

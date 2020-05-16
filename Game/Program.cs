@@ -37,24 +37,24 @@ namespace Game
             };
             var enemySizesByBehavior = new Dictionary<Type, GameObjectSize>
             {
-                {typeof(FlyingEnemyBehavior), new GameObjectSize {Height = 40, Width = 40}},
+                {typeof(FlyingEnemyBehavior), new GameObjectSize {Height = 40, Width = 60}},
                 {typeof(RunningEnemyBehavior), new GameObjectSize {Height = 40, Width = 40}}
             };
-            var renderersLoader = new GameRendererSettingsLoader(Path.Combine(PathHelpers.RootPath, "Resources"),
+            var renderersLoader = new ResourcesLoader(Path.Combine(PathHelpers.RootPath, "Resources"),
                 playerSizesByStates,
                 enemySizesByBehavior);
-            var renderersSet = renderersLoader.Load();
+            var renderersSet = renderersLoader.LoadRenderers();
             renderersSet.DefaultRenderer =
                 new DefaultGameObjectRenderer(DrawingHelpers.CreateSquare(20, 20, Color.Chartreuse));
             renderer = new GameRenderer(new PointF(0, mainForm.Size.Height), renderersSet);
 
             var game = new GameModel(
                 new EnemyFactory(enemySizesByBehavior,
-                    IEnemyBehavior.CreatorOf<FlyingEnemyBehavior>(),
-                    RunningEnemyBehavior.Creator(0),
+                    FlyingEnemyBehavior.Creator(1),
+                    FlyingEnemyBehavior.Creator(2),
+                    RunningEnemyBehavior.Creator(),
                     RunningEnemyBehavior.Creator(1),
-                    RunningEnemyBehavior.Creator(1.5),
-                    RunningEnemyBehavior.Creator(2)),
+                    RunningEnemyBehavior.Creator(1.5)),
                 new GameFieldSize(
                     mainForm.GameFieldSize.Height,
                     mainForm.GameFieldSize.Width), playerSizesByStates);
