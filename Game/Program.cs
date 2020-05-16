@@ -19,23 +19,27 @@ namespace Game
         private const int BetweenTicksDelay = 30;
         private static readonly GameForm mainForm = new GameForm();
         private static bool isDebugMode;
-        private static readonly GameRenderer renderer;
+        private static GameRenderer renderer;
 
         private static readonly KeyboardConfigurationController keyboardController =
             new KeyboardConfigurationController(Path.Combine(PathHelpers.RootPath, "keyboard_conf"));
 
         static Program()
         {
-            var renderersSet = GameRendererSettingsLoader.CreateDebugRenderersSet();
-            renderersSet.DefaultRenderer =
-                new DefaultGameObjectRenderer(DrawingHelpers.CreateSquare(20, 20, Color.Chartreuse));
-            renderer = new GameRenderer(new PointF(0, mainForm.Size.Height - 20), renderersSet);
         }
 
         [STAThread]
         public static void Main(params string[] commandLineArgs)
         {
             isDebugMode = commandLineArgs.Contains("-debug");
+
+            var renderersSet = isDebugMode
+                ? GameRendererSettingsLoader.CreateDebugRenderersSet()
+                : GameRendererSettingsLoader.Load();
+            renderersSet.DefaultRenderer =
+                new DefaultGameObjectRenderer(DrawingHelpers.CreateSquare(20, 20, Color.Chartreuse));
+            renderer = new GameRenderer(new PointF(0, mainForm.Size.Height - 20), renderersSet);
+
             var game = new GameModel(
                 new EnemyFactory(
                     new GameObjectSize {Width = 15, Height = 15},
