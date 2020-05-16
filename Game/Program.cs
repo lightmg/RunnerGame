@@ -24,10 +24,6 @@ namespace Game
         private static readonly KeyboardConfigurationController keyboardController =
             new KeyboardConfigurationController(Path.Combine(PathHelpers.RootPath, "keyboard_conf"));
 
-        static Program()
-        {
-        }
-
         [STAThread]
         public static void Main(params string[] commandLineArgs)
         {
