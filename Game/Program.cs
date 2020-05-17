@@ -42,6 +42,7 @@ namespace Game
         public static void Main(params string[] commandLineArgs)
         {
             isDebugMode = commandLineArgs.Contains("-debug");
+            gameForm.Show();
 
             var gameFieldSize = new GameFieldSize(
                 gameForm.GameFieldSize.Height,
@@ -55,6 +56,8 @@ namespace Game
             var floorImage = new Bitmap(gameForm.FloorSize.Width, gameForm.FloorSize.Height)
                 .FillWith(texturesRepository.Get("floor"));
             gameForm.SetFloorImage(floorImage);
+            gameForm.SetBackgroundImage(texturesRepository.Get("background")
+                .Resize(gameForm.GameFieldSize));
 
             renderer = new GameRenderer(
                 new PointF(gameForm.GameFieldSize.Width - (float) gameFieldSize.Width, (float) gameFieldSize.Height),

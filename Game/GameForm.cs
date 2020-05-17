@@ -38,6 +38,22 @@ namespace Game
                 FlatStyle = FlatStyle.Flat
             };
 
+            gamePictureBox = new PictureBox
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.Transparent,
+                BorderStyle = BorderStyle.None,
+                Margin = Padding.Empty
+            };
+
+            floorPictureBox = new PictureBox
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.Transparent,
+                BorderStyle = BorderStyle.None,
+                Margin = Padding.Empty
+            };
+
             var closeButtonPlaceholder = new Label
             {
                 Dock = DockStyle.Fill,
@@ -60,44 +76,35 @@ namespace Game
                 BorderStyle = BorderStyle.None,
                 FlatStyle = FlatStyle.Flat
             };
-            
-            var topTable = new TableLayoutPanel
-            {
-                Dock = DockStyle.Top,
-                BackColor = Color.Transparent,
-                ForeColor = Color.Transparent,
-                Height = 20
-            };
 
-            topTable.RowStyles.Clear();
-            topTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            topTable.ColumnStyles.Clear();
-            topTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
-            topTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
-            topTable.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            topTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 3));
-
-            topTable.Controls.Add(gameNameLabel, 0, 0);
-            topTable.Controls.Add(scoresLabel, 1, 0);
-            topTable.Controls.Add(gameStateLabel, 2, 0);
-            topTable.Controls.Add(closeButtonPlaceholder, 3, 0);
-
-            Controls.Add(topTable);
-
-            floorPictureBox = new PictureBox
-            {
-                Dock = DockStyle.Bottom,
-                Height = 100,
-            };
-            Controls.Add(floorPictureBox);
-
-            gamePictureBox = new PictureBox
+            var table = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.Black,
-                Margin = new Padding{Bottom = 100}
+                BackColor = Color.Transparent,
+                ForeColor = Color.Transparent,
+                BorderStyle = BorderStyle.None,
+                CellBorderStyle = TableLayoutPanelCellBorderStyle.None,
             };
-            Controls.Add(gamePictureBox);
+
+            table.RowStyles.Clear();
+            table.RowStyles.Add(new RowStyle(SizeType.Absolute, 25));
+            table.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            table.RowStyles.Add(new RowStyle(SizeType.Absolute, 150));
+            table.ColumnStyles.Clear();
+            table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
+            table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
+            table.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 3));
+            table.Controls.Add(gameNameLabel, 0, 0);
+            table.Controls.Add(scoresLabel, 1, 0);
+            table.Controls.Add(gameStateLabel, 2, 0);
+            table.Controls.Add(closeButtonPlaceholder, 3, 0);
+            table.Controls.Add(gamePictureBox, 0, 1);
+            table.SetColumnSpan(gamePictureBox, 4);
+            table.Controls.Add(floorPictureBox, 0, 2);
+            table.SetColumnSpan(floorPictureBox, 4);
+
+            Controls.Add(table);
 
             Width = 800;
             Height = 600;
@@ -106,11 +113,12 @@ namespace Game
 
             base.BackColor = Color.DarkGray;
             Draw(Enumerable.Empty<ImageRenderInfo>());
+            Draw(Enumerable.Empty<ImageRenderInfo>());
         }
 
         public void Draw(IEnumerable<ImageRenderInfo> toDraw)
         {
-            var canvas = new Bitmap(Width, Height);
+            var canvas = new Bitmap(GameFieldSize.Width, GameFieldSize.Height);
             using var graphics = Graphics.FromImage(canvas);
             foreach (var imageInfo in toDraw)
                 graphics.DrawImage(imageInfo.Image, imageInfo.Point);
@@ -131,6 +139,11 @@ namespace Game
         public void SetFloorImage(Image image)
         {
             floorPictureBox.Image = (Image) image.Clone();
+        }
+
+        public void SetBackgroundImage(Image image)
+        {
+            gamePictureBox.BackgroundImage = image;
         }
     }
 }
