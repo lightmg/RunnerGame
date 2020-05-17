@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Game.Models;
@@ -41,6 +42,16 @@ namespace Game
         {
             if (KeyBindings.TryGetValue(key, out var value))
                 ActiveAction ^= value;
+        }
+
+        public Keys GetKeyBindForAction(GameAction gameAction)
+        {
+            var requiredKeys = KeyBindings.Where(x => x.Value == gameAction)
+                .Select(x => x.Key)
+                .ToArray();
+            return requiredKeys.Length != 0 
+                ? requiredKeys[0]
+                : Keys.None;
         }
 
         public void Save()

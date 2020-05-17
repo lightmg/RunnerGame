@@ -14,6 +14,7 @@ namespace Game.Rendering
     {
         private readonly Dictionary<PlayerState, Size> playerSizesByState;
         private readonly Dictionary<string, (Type behaviorType, Size objectSize)> enemySizesByBehavior;
+        private readonly MissedTextureFactory defaultTextureLoader = new MissedTextureFactory();
 
         private readonly Lazy<GameResource[]> loadedResources;
 
@@ -75,24 +76,21 @@ namespace Game.Rendering
                 })
                 .NotNull()
                 .ToArray();
-            var defaultRendererResource = loadedResources.Value
-                .SingleOrDefault(x => x.FileName.Equals("default", StringComparison.OrdinalIgnoreCase));
-            var defaultRenderer = defaultRendererResource == null
-                ? null
-                : new DefaultGameObjectRenderer(PrepareImage(defaultRendererResource.Image));
 
             return new GameRenderersSet
             {
-                DefaultRenderer = defaultRenderer,
-                Renderers = playerRenderers.Cast<IGameObjectRenderer>()
+                MissedTextureFactory = defaultTextureLoader.Get,
+                ObjectsRenderers = playerRenderers.Cast<IGameObjectRenderer>()
                     .Concat(enemiesRenderer)
                     .ToArray()
             };
         }
 
-        private static Image[] CreateBlinkingSquare(int width, int height, params Color[] colors)
+        public TexturesRepository LoadTextures()
         {
-            return colors.Select(color => DrawingHelpers.CreateSquare(width, height, color)).ToArray();
+            return new TexturesRepository(defaultTextureLoader,
+                new GameObjectSize {Width = 50, Height = 50},
+                loadedResources.Value.ToDictionary(x => x.FileName, x => x.Image));
         }
 
         private static Image[] PrepareImage(Image sourceImage, Size? targetSize = null)

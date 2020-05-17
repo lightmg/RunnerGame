@@ -9,11 +9,12 @@ namespace Game
     {
         // public readonly PictureBox PictureBox;
         private readonly Label scoresLabel;
-        private readonly TableLayoutPanel topTable;
         private readonly Label gameStateLabel;
-        private readonly PictureBox pictureBox;
+        private readonly PictureBox gamePictureBox;
+        private readonly PictureBox floorPictureBox;
 
-        public Size GameFieldSize => pictureBox.Size;
+        public Size GameFieldSize => gamePictureBox.Size;
+        public Size FloorSize => floorPictureBox.Size;
 
         public GameForm()
         {
@@ -50,14 +51,6 @@ namespace Game
             };
             closeButtonPlaceholder.MouseClick += (sender, args) => Close();
 
-            topTable = new TableLayoutPanel
-            {
-                Dock = DockStyle.Top,
-                BackColor = Color.Transparent,
-                ForeColor = Color.Transparent,
-                Height = 20
-            };
-
             var gameNameLabel = new Label
             {
                 Dock = DockStyle.Fill,
@@ -66,6 +59,14 @@ namespace Game
                 BackColor = Color.Transparent,
                 BorderStyle = BorderStyle.None,
                 FlatStyle = FlatStyle.Flat
+            };
+            
+            var topTable = new TableLayoutPanel
+            {
+                Dock = DockStyle.Top,
+                BackColor = Color.Transparent,
+                ForeColor = Color.Transparent,
+                Height = 20
             };
 
             topTable.RowStyles.Clear();
@@ -83,22 +84,26 @@ namespace Game
 
             Controls.Add(topTable);
 
+            floorPictureBox = new PictureBox
+            {
+                Dock = DockStyle.Bottom,
+                Height = 100,
+            };
+            Controls.Add(floorPictureBox);
+
+            gamePictureBox = new PictureBox
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.Black,
+                Margin = new Padding{Bottom = 100}
+            };
+            Controls.Add(gamePictureBox);
+
             Width = 800;
             Height = 600;
             MaximizeBox = false;
             FormBorderStyle = FormBorderStyle.None;
-            pictureBox = new PictureBox
-            {
-                Dock = DockStyle.Fill,
-                BackColor = Color.Black
-            };
-            var mainContent = new Panel
-            {
-                Dock = DockStyle.Fill,
-                Controls = {pictureBox}
-            };
 
-            Controls.Add(mainContent);
             base.BackColor = Color.DarkGray;
             Draw(Enumerable.Empty<ImageRenderInfo>());
         }
@@ -109,8 +114,8 @@ namespace Game
             using var graphics = Graphics.FromImage(canvas);
             foreach (var imageInfo in toDraw)
                 graphics.DrawImage(imageInfo.Image, imageInfo.Point);
-            pictureBox.Image = canvas;
-            pictureBox.Refresh();
+            gamePictureBox.Image = canvas;
+            gamePictureBox.Refresh();
         }
 
         public void SetGameState(string state)
@@ -121,6 +126,11 @@ namespace Game
         public void SetGameScores(ulong score)
         {
             scoresLabel.Text = $"Score: {score.ToString()}";
+        }
+
+        public void SetFloorImage(Image image)
+        {
+            floorPictureBox.Image = (Image) image.Clone();
         }
     }
 }

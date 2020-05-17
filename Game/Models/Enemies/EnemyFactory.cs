@@ -4,13 +4,13 @@ using Game.Models.Enemies.Behavior;
 
 namespace Game.Models.Enemies
 {
-    public class EnemyFactory
+    public class RandomBehaviorEnemyFactory : IEnemyFactory
     {
         private readonly Dictionary<Type, GameObjectSize> enemiesSizesByBehavior;
         private readonly Func<IEnemyBehavior>[] existingBehaviors;
         private readonly Random random;
 
-        public EnemyFactory(Dictionary<Type, GameObjectSize> enemiesSizesByBehavior,
+        public RandomBehaviorEnemyFactory(Dictionary<Type, GameObjectSize> enemiesSizesByBehavior,
             params Func<IEnemyBehavior>[] existingBehaviorFactories)
         {
             this.enemiesSizesByBehavior = enemiesSizesByBehavior;
@@ -18,7 +18,7 @@ namespace Game.Models.Enemies
             random = new Random();
         }
 
-        public EnemyModel CreateWithRandomBehavior(InGamePosition position)
+        public EnemyModel Create(InGamePosition position)
         {
             var behaviorIndex = random.Next(existingBehaviors.Length);
             var enemyBehavior = existingBehaviors[behaviorIndex].Invoke();

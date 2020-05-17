@@ -75,9 +75,9 @@ namespace Game.Helpers
                         // or if the crop color is transparent and the pixel A value is not transparent
                         if ((backgroundColor.A == 0 && a != 0) ||
                             (backgroundColor.A > 0 && (b != backgroundColor.B ||
-                                                 g != backgroundColor.G ||
-                                                 r != backgroundColor.R ||
-                                                 a != backgroundColor.A)))
+                                                       g != backgroundColor.G ||
+                                                       r != backgroundColor.R ||
+                                                       a != backgroundColor.A)))
                         {
                             if (x < left)
                                 left = x;
@@ -125,6 +125,15 @@ namespace Game.Helpers
                 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
 
             return tempBitmap;
+        }
+
+        public static Image FillWith(this Image image, Image texture)
+        {
+            using var graphics = Graphics.FromImage(image);
+            for (var x = 0; x <= image.Size.Width + texture.Size.Width; x += texture.Width)
+            for (var y = 0; y <= image.Size.Height + texture.Size.Height; y += texture.Height)
+                graphics.DrawImage(texture, new Point(x, y));
+            return image;
         }
 
         private static bool IsMultipleFrames(this Image image)

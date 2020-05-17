@@ -26,7 +26,7 @@ namespace Game.Rendering
                 .Select(obj => new
                 {
                     Point = gameOrigin.Add(obj.Position.X, -obj.Position.Y - obj.ObjectParameters.Size.Height),
-                    Renderer = GetRendererForObject(obj),
+                    Renderer = GetRendererForObjectOrNull(obj),
                     GameObject = obj
                 })
                 .Select(x => new ImageRenderInfo
@@ -47,14 +47,15 @@ namespace Game.Rendering
                 .ToArray();
         }
 
-        private IGameObjectRenderer GetRendererForObject<T>(T gameObject) where T : InGameObject
+        private IGameObjectRenderer GetRendererForObjectOrNull<T>(T gameObject) where T : InGameObject
         {
-            return renderersSet.Renderers.FirstOrDefault(r => r.IsValidFor(gameObject)) ??
-                   renderersSet.DefaultRenderer;
+            return renderersSet.ObjectsRenderers.FirstOrDefault(r => r.IsValidFor(gameObject));
         }
 
-        private static Image RenderObject(GameState state, InGameObject gameObject, IGameObjectRenderer renderer)
+        private Image RenderObject(GameState state, InGameObject gameObject, IGameObjectRenderer renderer)
         {
+            if (renderer == null)
+                return renderersSet.MissedTextureFactory.Invoke(gameObject.ObjectParameters.Size);
             var ticksPerFrame = (int) (InitialTicksPerFrame / Math.Sqrt(state.Speed));
             var frameNum = (int) (gameObject.LifetimeTicks % (ulong) (renderer.Frames.Length * ticksPerFrame)) /
                            ticksPerFrame;
