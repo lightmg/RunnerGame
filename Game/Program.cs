@@ -18,7 +18,8 @@ namespace Game
         private const int BetweenTicksDelay = 30;
         private static GameForm gameForm = new GameForm();
         private static bool isDebugMode;
-        private static GameRenderer renderer;
+        private static GameRenderer gameRenderer;
+        private static TexturesRepository texturesRepository;
 
         private static readonly Dictionary<PlayerState, GameObjectSize> playerSizesByStates =
             new Dictionary<PlayerState, GameObjectSize>
@@ -32,7 +33,8 @@ namespace Game
             new Dictionary<Type, GameObjectSize>
             {
                 {typeof(FlyingEnemyBehavior), new GameObjectSize {Height = 40, Width = 60}},
-                {typeof(RunningEnemyBehavior), new GameObjectSize {Height = 40, Width = 40}}
+                {typeof(RunningEnemyBehavior), new GameObjectSize {Height = 40, Width = 40}},
+                {typeof(StandingEnemyBehavior), new GameObjectSize {Height = 70, Width = 30}}
             };
 
         private static readonly KeyboardConfigurationController keyboardController =
@@ -43,31 +45,23 @@ namespace Game
         {
             isDebugMode = commandLineArgs.Contains("-debug");
             gameForm.Show();
-
-            var gameFieldSize = new GameFieldSize(
-                gameForm.GameFieldSize.Height,
-                gameForm.GameFieldSize.Width);
+            var gameFieldSize = new GameFieldSize(gameForm.GameFieldSize.Height, gameForm.GameFieldSize.Width);
 
             var renderersLoader = new ResourcesLoader(Path.Combine(PathHelpers.RootPath, "Resources"),
                 playerSizesByStates,
                 enemiesSizesByBehavior);
+            texturesRepository = renderersLoader.LoadTextures();
+            var renderersSet = renderersLoader.LoadRenderers();
 
-            var texturesRepository = renderersLoader.LoadTextures();
-            var floorImage = new Bitmap(gameForm.FloorSize.Width, gameForm.FloorSize.Height)
-                .FillWith(texturesRepository.Get("floor"));
-            gameForm.SetFloorImage(floorImage);
-            gameForm.SetBackgroundImage(texturesRepository.Get("background")
-                .Resize(gameForm.GameFieldSize));
-
-            renderer = new GameRenderer(
+            gameRenderer = new GameRenderer(
                 new PointF(gameForm.GameFieldSize.Width - (float) gameFieldSize.Width, (float) gameFieldSize.Height),
-                renderersLoader.LoadRenderers());
+                renderersSet);
 
             var game = new GameModel(
                 new RandomBehaviorEnemyFactory(enemiesSizesByBehavior,
+                    StandingEnemyBehavior.Creator(),
                     FlyingEnemyBehavior.Creator(1),
                     FlyingEnemyBehavior.Creator(2),
-                    RunningEnemyBehavior.Creator(),
                     RunningEnemyBehavior.Creator(1),
                     RunningEnemyBehavior.Creator(1.5)),
                 gameFieldSize, playerSizesByStates);
@@ -75,6 +69,7 @@ namespace Game
             gameForm.KeyDown += (_, args) => keyboardController.KeyPressed(args.KeyCode);
             gameForm.KeyUp += (_, args) => keyboardController.KeyReleased(args.KeyCode);
 
+            RedrawEnvironment();
             using var timer = new Timer {Interval = BetweenTicksDelay};
             timer.Tick += (_, __) =>
             {
@@ -88,11 +83,20 @@ namespace Game
 
         private static void UpdateGameField(GameModel game)
         {
-            gameForm.Draw(renderer.Render(game, isDebugMode));
+            gameForm.Draw(gameRenderer.Render(game, isDebugMode));
             gameForm.SetGameScores(game.State.Score);
             gameForm.SetGameState(game.State.PlayerAlive
                 ? $"HP: {game.State.PlayerHealth}"
                 : $"Press {keyboardController.GetKeyBindForAction(GameAction.Start)} to start");
+        }
+
+        private static void RedrawEnvironment()
+        {
+            var floorImage = new Bitmap(gameForm.FloorSize.Width, gameForm.FloorSize.Height)
+                .FillWith(texturesRepository.Get("floor"));
+            gameForm.SetFloorImage(floorImage);
+            gameForm.SetBackgroundImage(texturesRepository.Get("background")
+                .Resize(gameForm.GameFieldSize));
         }
     }
 }

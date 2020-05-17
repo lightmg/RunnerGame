@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Threading;
+using NUnit.Framework;
 
-namespace Game.Common
+namespace Tests
 {
     public static class Waiter
     {
-        public static bool Wait<T>(Func<T> func, T expectedValue, int delayMilliseconds, TimeSpan timeout)
+        public static void Wait<T>(Func<T> func, T expectedValue, int delayMilliseconds, TimeSpan timeout)
         {
             var retryUntil = DateTime.Now + timeout;
             while (DateTime.Now <= retryUntil)
             {
                 if (Equals(func.Invoke(), expectedValue))
-                    return true;
+                    return;
                 Thread.Sleep(delayMilliseconds);
             }
 
-            return false;
+            Assert.Fail($"Func isn't competed after {timeout.TotalSeconds} seconds");
         }
     }
 }

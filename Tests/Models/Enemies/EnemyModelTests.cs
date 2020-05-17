@@ -1,11 +1,10 @@
 ﻿using System;
-using Game.Helpers;
 using Game.Models;
 using Game.Models.Enemies;
 using Game.Models.Enemies.Behavior;
 using NUnit.Framework;
 
-namespace Tests
+namespace Tests.Models.Enemies
 {
     public class EnemyModelTests
     {
@@ -84,7 +83,7 @@ namespace Tests
             public event Func<GameState, GameObjectParameters, InGamePosition> OnDo;
             public int InvocationsCount { get; set; } = 0;
 
-            public InGamePosition Do(GameState state, GameObjectParameters enemyParameters, ulong enemyLifetimeTicks)
+            public InGamePosition Do(GameState state, GameObjectParameters enemyParameters)
             {
                 InvocationsCount++;
                 return OnDo?.Invoke(state, enemyParameters);

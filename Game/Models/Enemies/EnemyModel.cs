@@ -10,12 +10,13 @@ namespace Game.Models.Enemies
             EnemyBehavior = enemyBehavior;
         }
 
-        public readonly IEnemyBehavior EnemyBehavior;
+        public IEnemyBehavior EnemyBehavior { get; }
 
         public void Tick(GameState gameState, InGamePosition baseOffset)
         {
-            ObjectParameters.Position = EnemyBehavior.Do(gameState, ObjectParameters, LifetimeTicks)
-                .Add(baseOffset);
+            ObjectParameters.Position = EnemyBehavior.Do(gameState, ObjectParameters)
+                .Add(baseOffset)
+                .Add(Position);
             LifetimeTicks++;
         }
     }

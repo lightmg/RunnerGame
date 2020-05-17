@@ -2,12 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Game.Common;
 using Game.Models;
 using Game.Models.Player;
 using NUnit.Framework;
 
-namespace Tests
+namespace Tests.Models.Player
 {
     public class PlayerModelTests
     {
@@ -164,7 +163,11 @@ namespace Tests
 
         private PlayerModel CreatePlayer(PlayerState initialState)
         {
-            return new PlayerModel(
+            return new PlayerModel(initialHealth: InitialHealth,
+                position: new InGamePosition
+                {
+                    X = 10, Y = 0
+                },
                 sizesByState: new Dictionary<PlayerState, GameObjectSize>
                 {
                     {
@@ -176,14 +179,7 @@ namespace Tests
                     {
                         PlayerState.OnGround, new GameObjectSize {Width = 20, Height = 20}
                     }
-                },
-                position: new InGamePosition
-                {
-                    X = 10, Y = 0
-                },
-                initialHealth: InitialHealth,
-                initialState: initialState,
-                gameState: new GameState(new GameFieldSize(100, 100), 100, 100));
+                }, initialState: initialState);
         }
     }
 }

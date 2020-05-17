@@ -12,9 +12,8 @@ namespace Game.Models.Enemies.Behavior
         /// </summary>
         /// <param name="state"></param>
         /// <param name="enemyParameters">Current coordinate of enemy</param>
-        /// <param name="enemyLifetimeTicks"></param>
         /// <returns>Enemy possition offset</returns>
-        public InGamePosition Do(GameState state, GameObjectParameters enemyParameters, ulong enemyLifetimeTicks);
+        public InGamePosition Do(GameState state, GameObjectParameters enemyParameters);
 
         public static Func<T> CreatorOf<T>() where T : class, IEnemyBehavior, new() => () => new T();
     }
