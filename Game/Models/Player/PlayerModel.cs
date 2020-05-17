@@ -12,15 +12,12 @@ namespace Game.Models.Player
         private readonly double initialJumpSpeed;
         private readonly int initialHealth;
         private readonly Dictionary<PlayerState, GameObjectSize> sizesByState;
-        private readonly GameState gameState;
 
         public PlayerModel(int initialHealth, InGamePosition position,
-            Dictionary<PlayerState, GameObjectSize> sizesByState,
-            GameState gameState, PlayerState initialState = PlayerState.OnGround)
+            Dictionary<PlayerState, GameObjectSize> sizesByState, PlayerState initialState = PlayerState.OnGround)
         {
             this.initialHealth = initialHealth;
             this.sizesByState = sizesByState;
-            this.gameState = gameState;
             State = initialState;
             ObjectParameters = new GameObjectParameters
             {
@@ -28,13 +25,15 @@ namespace Game.Models.Player
                 Size = sizesByState[PlayerState.OnGround]
             };
             initialJumpSpeed =
-                Math.Sqrt(ObjectParameters.Size.Height * GravityAcceleration * (2 + JumpPeakByPlayerHeight));
+                Math.Sqrt(ObjectParameters.Size.Height * GravityAcceleration * (1 + JumpPeakByPlayerHeight));
+            MaxJumpHeight = ObjectParameters.Size.Height * JumpPeakByPlayerHeight;
         }
 
         public int CurrentHealth => initialHealth - TakenDamage;
         public bool IsAlive => CurrentHealth > 0;
         public int TakenDamage { get; private set; }
         public PlayerState State { get; private set; }
+        public double MaxJumpHeight { get; private set; }
         private int TicksAfterJump { get; set; }
 
         public void Tick(PlayerAction action, bool isDamageTaken = false)

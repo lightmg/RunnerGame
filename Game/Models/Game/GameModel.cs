@@ -91,7 +91,7 @@ namespace Game.Models
             {
                 X = 30,
                 Y = 0,
-            }, playerSizesByStates, State);
+            }, playerSizesByStates);
             State = new GameState(gameFieldSize, 1, 1)
             {
                 PlayerHealth = Player.CurrentHealth
@@ -100,7 +100,7 @@ namespace Game.Models
 
         private EnemyModel CreateEnemy()
         {
-            var height = random.Next(0, Player.ObjectParameters.Size.Height * 3);
+            var height = random.Next(0, (int) (Player.MaxJumpHeight * 0.75));
             var createdEnemy = enemyFactory.Create(new InGamePosition
             {
                 X = gameFieldSize.Width - 1,

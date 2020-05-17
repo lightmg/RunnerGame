@@ -6,18 +6,20 @@ namespace Game.Models.Enemies.Behavior
     {
         private readonly double enemySpeed;
 
-        public RunningEnemyBehavior(double enemySpeed)
+        protected RunningEnemyBehavior(double enemySpeed)
         {
             this.enemySpeed = enemySpeed;
         }
 
-        public InGamePosition Do(GameState state, GameObjectParameters enemyParameters, ulong enemyLifetimeTicks)
+        public InGamePosition Do(GameState state, GameObjectParameters enemyParameters)
         {
-            return enemyParameters.Position.Add(-state.Speed * enemySpeed);
+            return new InGamePosition{X = -state.Speed * enemySpeed};
         }
 
-        public static Func<RunningEnemyBehavior> Creator(double speed = 0)
+        public static Func<IEnemyBehavior> Creator(double speed)
         {
+            if (Math.Abs(speed) < double.Epsilon)
+                return StandingEnemyBehavior.Creator();
             return () => new RunningEnemyBehavior(speed);
         }
     }

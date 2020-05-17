@@ -56,7 +56,7 @@ namespace Game.Rendering
         {
             if (renderer == null)
                 return renderersSet.MissedTextureFactory.Invoke(gameObject.ObjectParameters.Size);
-            var ticksPerFrame = (int) (InitialTicksPerFrame / Math.Sqrt(state.Speed));
+            var ticksPerFrame = (int) (InitialTicksPerFrame / Math.Sqrt(Math.Sqrt(state.Speed)));
             var frameNum = (int) (gameObject.LifetimeTicks % (ulong) (renderer.Frames.Length * ticksPerFrame)) /
                            ticksPerFrame;
             return renderer.Frames[frameNum];
