@@ -7,7 +7,7 @@ namespace Game.Rendering.Renderers
 {
     public abstract class BaseGameObjectRenderer<T> : IGameObjectRenderer where T : InGameObject
     {
-        [NotNull] public abstract Image[] Frames { get; }
+        public abstract Image[] Frames { get; }
 
         protected abstract Func<T, bool> RendererCompabilityChecker { get; }
 

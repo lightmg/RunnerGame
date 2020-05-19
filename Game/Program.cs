@@ -16,7 +16,7 @@ namespace Game
     public static class Program
     {
         private const int BetweenTicksDelay = 30;
-        private static GameForm gameForm = new GameForm();
+        private static readonly GameForm gameForm = new GameForm();
         private static bool isDebugMode;
         private static GameRenderer gameRenderer;
         private static TexturesRepository texturesRepository;
@@ -26,15 +26,15 @@ namespace Game
             {
                 {PlayerState.OnGround, new GameObjectSize {Height = 100, Width = 40}},
                 {PlayerState.Jumping, new GameObjectSize {Height = 100, Width = 40}},
-                {PlayerState.Crouching, new GameObjectSize {Height = 40, Width = 100}},
+                {PlayerState.Crouching, new GameObjectSize {Height = 40, Width = 100}}
             };
 
-        private static readonly Dictionary<Type, GameObjectSize> enemiesSizesByBehavior =
-            new Dictionary<Type, GameObjectSize>
+        private static readonly Dictionary<string, GameObjectSize> enemiesSizesByBehavior =
+            new Dictionary<string, GameObjectSize>
             {
-                {typeof(FlyingEnemyBehavior), new GameObjectSize {Height = 40, Width = 60}},
-                {typeof(RunningEnemyBehavior), new GameObjectSize {Height = 40, Width = 40}},
-                {typeof(StandingEnemyBehavior), new GameObjectSize {Height = 70, Width = 30}}
+                {nameof(FlyingEnemyBehavior), new GameObjectSize {Height = 40, Width = 60}},
+                {nameof(RunningEnemyBehavior), new GameObjectSize {Height = 40, Width = 40}},
+                {nameof(StandingEnemyBehavior), new GameObjectSize {Height = 70, Width = 30}}
             };
 
         private static readonly KeyboardConfigurationController keyboardController =

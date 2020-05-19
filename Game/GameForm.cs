@@ -7,7 +7,6 @@ namespace Game
 {
     public class GameForm : Form
     {
-        // public readonly PictureBox PictureBox;
         private readonly Label scoresLabel;
         private readonly Label gameStateLabel;
         private readonly PictureBox gamePictureBox;
@@ -112,7 +111,6 @@ namespace Game
             FormBorderStyle = FormBorderStyle.None;
 
             base.BackColor = Color.DarkGray;
-            Draw(Enumerable.Empty<ImageRenderInfo>());
             Draw(Enumerable.Empty<ImageRenderInfo>());
         }
 

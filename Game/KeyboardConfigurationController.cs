@@ -54,19 +54,17 @@ namespace Game
                 : Keys.None;
         }
 
-        public void Save()
+        private void Save()
         {
             var serialized = JsonConvert.SerializeObject(KeyBindings, Formatting.Indented, new StringEnumConverter());
-            using var streamWriter = new StreamWriter(OpenStream(true), Encoding.UTF8);
-            streamWriter.Write(serialized);
+            File.WriteAllText(configurationPath, serialized, Encoding.UTF8);
         }
 
-        public void Read()
+        private void Read()
         {
             if (File.Exists(configurationPath))
             {
-                using var streamReader = new StreamReader(OpenStream(false), Encoding.UTF8);
-                var rawText = streamReader.ReadToEnd();
+                var rawText = File.ReadAllText(configurationPath, Encoding.UTF8);
                 try
                 {
                     KeyBindings = JsonConvert.DeserializeObject<Dictionary<Keys, GameAction>>(rawText);
@@ -81,16 +79,6 @@ namespace Game
             if (KeyBindings != null && KeyBindings.Count != 0) return;
             KeyBindings = defaultConfiguration.Value;
             Save();
-        }
-
-        private FileStream OpenStream(bool forWriting)
-        {
-            return new FileStream(configurationPath, forWriting
-                    ? FileMode.Create
-                    : FileMode.Open,
-                forWriting
-                    ? FileAccess.Write
-                    : FileAccess.Read);
         }
     }
 }

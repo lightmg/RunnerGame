@@ -6,11 +6,11 @@ namespace Game.Models.Enemies
 {
     public class RandomBehaviorEnemyFactory : IEnemyFactory
     {
-        private readonly Dictionary<Type, GameObjectSize> enemiesSizesByBehavior;
+        private readonly Dictionary<string, GameObjectSize> enemiesSizesByBehavior;
         private readonly Func<IEnemyBehavior>[] existingBehaviors;
         private readonly Random random;
 
-        public RandomBehaviorEnemyFactory(Dictionary<Type, GameObjectSize> enemiesSizesByBehavior,
+        public RandomBehaviorEnemyFactory(Dictionary<string, GameObjectSize> enemiesSizesByBehavior,
             params Func<IEnemyBehavior>[] existingBehaviorFactories)
         {
             this.enemiesSizesByBehavior = enemiesSizesByBehavior;
@@ -29,7 +29,7 @@ namespace Game.Models.Enemies
                 new GameObjectParameters
                 {
                     Position = position.Clone(),
-                    Size = enemiesSizesByBehavior[enemyBehavior.GetType()].Clone()
+                    Size = enemiesSizesByBehavior[enemyBehavior.GetType().Name].Clone()
                 });
         }
     }

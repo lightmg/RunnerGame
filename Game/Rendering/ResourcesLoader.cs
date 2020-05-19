@@ -13,19 +13,19 @@ namespace Game.Rendering
     public class ResourcesLoader
     {
         private readonly Dictionary<PlayerState, Size> playerSizesByState;
-        private readonly Dictionary<string, (Type behaviorType, Size objectSize)> enemySizesByBehavior;
+        private readonly Dictionary<string, Size> enemySizesByBehavior;
         private readonly MissedTextureFactory defaultTextureLoader = new MissedTextureFactory();
 
         private readonly Lazy<GameResource[]> loadedResources;
 
         public ResourcesLoader(string resourcesPath,
             Dictionary<PlayerState, GameObjectSize> playerSizesByState,
-            Dictionary<Type, GameObjectSize> enemySizesByBehavior)
+            Dictionary<string, GameObjectSize> enemySizesByBehavior)
         {
             this.playerSizesByState = playerSizesByState
                 .ToDictionary(x => x.Key, x => new Size(x.Value.Width, x.Value.Height));
             this.enemySizesByBehavior = enemySizesByBehavior
-                .ToDictionary(x => x.Key.Name, x => (x.Key, new Size(x.Value.Width, x.Value.Height)));
+                .ToDictionary(x => x.Key, x => new Size(x.Value.Width, x.Value.Height)); 
 
             loadedResources = new Lazy<GameResource[]>(() =>
             {
@@ -34,8 +34,8 @@ namespace Game.Rendering
                     throw new InvalidOperationException($"Resources folder [{resourcesPath}] doesn't exists");
 
                 var resources = directoryInfo.GetFiles("*.png")
-                    .Union(directoryInfo.GetFiles("*.gif"))
-                    .Union(directoryInfo.GetFiles("*.jpg"))
+                    .Concat(directoryInfo.GetFiles("*.gif"))
+                    .Concat(directoryInfo.GetFiles("*.jpg"))
                     .Select(fileInfo => new GameResource
                     {
                         Image = Image.FromFile(fileInfo.FullName),
@@ -71,7 +71,7 @@ namespace Game.Rendering
                     var enemyType = x.FileName.Split("_").Last();
                     var behaviorRecognized = enemySizesByBehavior.TryGetValue(enemyType, out var val);
                     return behaviorRecognized
-                        ? new EnemyByBehaviorRenderer(val.behaviorType, PrepareImage(x.Image, val.objectSize))
+                        ? new EnemyByBehaviorRenderer(enemyType, PrepareImage(x.Image, val))
                         : null;
                 })
                 .NotNull()
